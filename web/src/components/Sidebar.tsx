@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Highlighter, ChevronUp, ChevronDown, X, Trash2 } from 'lucide-react';
+import { useCallback } from 'react';
+import { Highlighter, Trash2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -9,7 +9,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { HighlightItem } from '@/lib/types';
@@ -18,12 +17,22 @@ interface SidebarProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   highlights: HighlightItem[];
-  onRemoveHighlight: (id: string) => void;
+  setHighlights: React.Dispatch<React.SetStateAction<HighlightItem[]>>;
 }
 
-export default function Sidebar({ open, onOpenChange, highlights, onRemoveHighlight }: SidebarProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function Sidebar({ open, onOpenChange, highlights, setHighlights }: SidebarProps) {
+  const removeHighlight = useCallback((highlightId: string) => {
+    document
+      .querySelectorAll(`mark[data-highlight-id="${highlightId}"]`)
+      .forEach((mark) => {
+        const parent = mark.parentNode!;
+        while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+        parent.removeChild(mark);
+        parent.normalize();
+      });
+    setHighlights((prev) => prev.filter((h) => h.id !== highlightId));
 
+  }, []);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-80 sm:max-w-80 p-0 gap-0 border-none">
@@ -46,48 +55,6 @@ export default function Sidebar({ open, onOpenChange, highlights, onRemoveHighli
 
         <Separator />
 
-        {/* <div className="px-4 py-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Search className="size-4 text-muted-foreground" />
-            <h3 className="text-sm font-medium">Search in PDF</h3>
-          </div>
-          <div className="flex items-center gap-1">
-            <Input
-              placeholder="Search text..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 text-sm"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 shrink-0"
-                onClick={() => setSearchQuery('')}
-              >
-                <X className="size-3.5" />
-              </Button>
-            )}
-          </div>
-          {searchQuery && (
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">
-                0 results found
-              </span>
-              <div className="flex items-center gap-0.5">
-                <Button variant="ghost" size="icon" className="size-7">
-                  <ChevronUp className="size-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="size-7">
-                  <ChevronDown className="size-3.5" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Separator /> */}
-
         <div className="px-4 py-4">
           {highlights.length === 0 ? (
             <p className="text-xs text-muted-foreground">
@@ -98,7 +65,7 @@ export default function Sidebar({ open, onOpenChange, highlights, onRemoveHighli
               {highlights.map((h) => (
                 <div
                   key={h.id}
-                  className="group flex items-start gap-2 rounded-md border border-border p-2 text-xs"
+                  className="group flex-between gap-2 rounded-md border border-border p-2 text-xs"
                 >
                   <div className="flex-1 min-w-0">
                     <span className="text-muted-foreground">
@@ -109,8 +76,8 @@ export default function Sidebar({ open, onOpenChange, highlights, onRemoveHighli
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => onRemoveHighlight(h.id)}
+                    className="size-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => removeHighlight(h.id)}
                   >
                     <Trash2 className="size-3.5 text-destructive" />
                   </Button>
