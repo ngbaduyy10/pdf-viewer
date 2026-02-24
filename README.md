@@ -13,7 +13,7 @@ A web-based PDF reader with core features: document viewing, manual highlighting
 ### 📥 1) Clone from Git
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/ngbaduyy10/pdf-viewer.git
 cd pdf-viewer
 ```
 
