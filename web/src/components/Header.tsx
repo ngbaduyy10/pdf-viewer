@@ -10,28 +10,51 @@ import Highlight from "./Highlight";
 
 interface HeaderProps {
   file: File | null;
+  setFile: (file: File) => void;
   currentPage: number;
   numPages: number;
+  setNumPages: (numPages: number) => void;
   pageInput: string;
   setPageInput: (value: string) => void;
-  handlePageInputKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  pageElementsRef: React.RefObject<Map<number, HTMLDivElement>>;
   setHighlights: React.Dispatch<React.SetStateAction<HighlightItem[]>>;
   onToggleSidebar: () => void;
 }
 
 export default function Header({ 
   file,
+  setFile,
   currentPage,
   numPages,
+  setNumPages,
   pageInput,
   setPageInput,
-  handlePageInputKeyDown,
-  handleFileChange,
+  pageElementsRef,
   setHighlights,
   onToggleSidebar,
 }: HeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (selected && selected.type === 'application/pdf') {
+      setFile(selected);
+      setNumPages(0);
+    }
+  };
+
+  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const target = Number(pageInput);
+      if (target >= 1 && target <= numPages) {
+        const el = pageElementsRef.current.get(target);
+        el?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      } else {
+        setPageInput(String(currentPage));
+      }
+      (e.target as HTMLInputElement).blur();
+    }
+  };
   
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-5 flex-between">
