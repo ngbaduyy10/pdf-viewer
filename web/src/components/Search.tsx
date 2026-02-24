@@ -58,6 +58,7 @@ export default function Search() {
       if (positions.length === 0) continue;
 
       let remaining = textNode;
+      const nodeMatches: HTMLElement[] = [];
       for (let i = positions.length - 1; i >= 0; i--) {
         const pos = positions[i];
         const end = pos + lowerText.length;
@@ -69,8 +70,9 @@ export default function Search() {
         mark.className = 'pdf-search-highlight';
         matchNode.parentNode!.insertBefore(mark, matchNode);
         mark.appendChild(matchNode);
-        matches.unshift(mark);
+        nodeMatches.unshift(mark);
       }
+      matches.push(...nodeMatches);
     }
 
     searchMatchesRef.current = matches;
@@ -79,7 +81,7 @@ export default function Search() {
     if (matches.length > 0) {
       setCurrentMatchIndex(0);
       matches[0].classList.add('current');
-      matches[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      matches[0].scrollIntoView({ behavior: 'instant', block: 'center' });
     }
   }, [clearSearchHighlights]);
 
@@ -103,7 +105,7 @@ export default function Search() {
         ? (prev + 1) % matches.length
         : (prev - 1 + matches.length) % matches.length;
       matches[next]?.classList.add('current');
-      matches[next]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      matches[next]?.scrollIntoView({ behavior: 'instant', block: 'center' });
       return next;
     });
   }, []);
